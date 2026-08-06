@@ -19,12 +19,14 @@ import { cn } from "@/lib/utils";
 import { operationDetailsPath, saveOperation } from "@/lib/operations";
 import { preferenceSchema } from "@/lib/schemas";
 import { usePersonalization } from "@/components/providers/personalization-provider";
+import { BankOfferGrid } from "@/components/shared/bank-offer-grid";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { getConfiguredDate } from "@/lib/personalization";
 
 const paymentSchema = z.object({
-  account: z.string().trim().min(5, "Введите телефон или лицевой счёт"),
+  account: z.string().trim().min(5, "payments.validation.account"),
   extra: z.string(),
-  amount: z.string().trim().min(1, "Введите сумму").refine((value) => Number(value.replace(/\s/g, "")) > 0, "Сумма должна быть больше нуля").refine((value) => Number(value.replace(/\s/g, "")) <= 300000, "Лимит платежа — 300 000 ₽"),
+  amount: z.string().trim().min(1, "payments.validation.amount").refine((value) => Number(value.replace(/\s/g, "")) > 0, "payments.validation.positive").refine((value) => Number(value.replace(/\s/g, "")) <= 300000, "payments.validation.limit"),
   scheduleAt: z.string(),
 });
 
@@ -58,14 +60,17 @@ const paymentSuggestions: Record<string, { label: string; value: string; meta: s
 export function PaymentsScreen({ slug }: { slug: string }) {
   const router = useRouter();
   const { settings } = usePersonalization();
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState("");
   const [servicesExpanded, setServicesExpanded] = useState(true);
   const [serviceId, setServiceId] = useState<(typeof services)[number]["id"]>("mobile");
   const [draft, setDraft] = useState<PaymentValues | null>(null);
   const [security] = useCookieState("lumen-settings-security", preferenceSchema, SECURITY_SETTINGS_DEFAULTS);
   const selected = services.find((service) => service.id === serviceId) ?? services[0];
+  const selectedTitle = t(`payments.service.${selected.id}.title`, selected.title);
+  const selectedHint = t(`payments.service.${selected.id}.hint`, selected.hint);
   const SelectedIcon = selected.icon;
-  const filtered = useMemo(() => services.filter((service) => `${service.title} ${service.hint}`.toLowerCase().includes(query.toLowerCase())), [query]);
+  const filtered = useMemo(() => services.filter((service) => `${t(`payments.service.${service.id}.title`, service.title)} ${t(`payments.service.${service.id}.hint`, service.hint)}`.toLowerCase().includes(query.toLowerCase())), [query, t]);
   const form = useForm<PaymentValues>({ resolver: zodResolver(paymentSchema), defaultValues: { account: "", extra: "", amount: "", scheduleAt: "" } });
   const accountValue = useWatch({ control: form.control, name: "account" });
   const amountValue = useWatch({ control: form.control, name: "amount" });
@@ -88,8 +93,8 @@ export function PaymentsScreen({ slug }: { slug: string }) {
     saveOperation({
       slug,
       kind: "payment",
-      title: selected.title,
-      subtitle: selected.hint,
+      title: selectedTitle,
+      subtitle: selectedHint,
       amount: -amount,
       fee,
       status: scheduled && scheduled > now ? "processing" : "completed",
@@ -98,10 +103,10 @@ export function PaymentsScreen({ slug }: { slug: string }) {
       source: `${settings.brandName} Black •• 0932`,
       recipient: values.account,
       currency: "RUB",
-      legalReference: "Правила дистанционного банковского обслуживания физических лиц",
-      details: { Категория: selected.title, Услуга: selected.title, Канал: `${settings.brandName} Online`, ...(values.extra ? { "Дополнительные данные": values.extra } : {}), "Тариф комиссии": selected.feeRate ? `${selected.feeRate * 100}%` : "Без комиссии" },
+      legalReference: t("payments.legalReference", "Правила дистанционного банковского обслуживания физических лиц"),
+      details: { [t("payments.detail.category", "Категория")]: selectedTitle, [t("payments.detail.service", "Услуга")]: selectedTitle, [t("payments.detail.channel", "Канал")]: `${settings.brandName} Online`, ...(values.extra ? { [t("payments.detail.extra", "Дополнительные данные")]: values.extra } : {}), [t("payments.detail.fee", "Тариф комиссии")]: selected.feeRate ? `${selected.feeRate * 100}%` : t("payments.fee.free", "Без комиссии") },
     });
-    toast.success("Платёж подтверждён в демо-режиме");
+    toast.success(t("payments.toast.completed", "Платёж подтверждён в демо-режиме"));
     setDraft(null);
     router.push(operationDetailsPath(slug));
   }
@@ -114,60 +119,67 @@ export function PaymentsScreen({ slug }: { slug: string }) {
   }
 
   const currentFee = Math.round(Number(amountValue.replace(/\s/g, "")) * selected.feeRate) || 0;
+  const localizedSuggestions = (paymentSuggestions[selected.id] ?? [{ label: "Последние реквизиты", value: "408-219-55", meta: selected.hint, kind: "recent" as const }]).map((suggestion, index) => ({
+    ...suggestion,
+    label: t(`payments.suggestion.${selected.id}.${index + 1}.label`, suggestion.label),
+    meta: t(`payments.suggestion.${selected.id}.${index + 1}.meta`, suggestion.meta),
+  }));
 
   return (
     <>
       <PaymentNavigation active="payment" />
       <Card className="mb-4 overflow-hidden border-primary/25">
         <CardContent className="bg-background/28 p-4 backdrop-blur-xl sm:p-5">
-          <Label htmlFor="service-search" className="sr-only">Поиск услуги</Label>
-          <div className="relative"><Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" /><Input id="service-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найдите услугу, компанию или начисление" className="h-14 bg-card/80 pl-12 text-base shadow-xl" /></div>
+          <Label htmlFor="service-search" className="sr-only">{t("payments.search.label", "Поиск услуги")}</Label>
+          <div className="relative"><Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" /><Input id="service-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("payments.search.placeholder", "Найдите услугу, компанию или начисление")} className="h-14 bg-card/80 pl-12 text-base shadow-xl" /></div>
         </CardContent>
       </Card>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="grid items-start gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(400px,440px)]">
         <Card>
-          <CardHeader><div className="flex items-center justify-between gap-3"><div><CardTitle className="text-lg">Оплата услуг</CardTitle><CardDescription>Выберите категорию — форма откроется справа</CardDescription></div><Button type="button" variant="ghost" size="sm" className="md:hidden" onClick={() => setServicesExpanded((value) => !value)} aria-expanded={servicesExpanded}>{servicesExpanded ? "Свернуть" : "Показать"}<ChevronDown className={cn("transition-transform", servicesExpanded && "rotate-180")} /></Button></div></CardHeader>
+          <CardHeader><div className="flex items-center justify-between gap-3"><div><CardTitle className="text-lg">{t("payments.services.title", "Оплата услуг")}</CardTitle><CardDescription>{t("payments.services.description", "Выберите категорию — форма откроется справа")}</CardDescription></div><Button type="button" variant="ghost" size="sm" className="md:hidden" onClick={() => setServicesExpanded((value) => !value)} aria-expanded={servicesExpanded}>{servicesExpanded ? t("action.collapse", "Свернуть") : t("action.show", "Показать")}<ChevronDown className={cn("transition-transform", servicesExpanded && "rotate-180")} /></Button></div></CardHeader>
           <CardContent>
             <div className={cn("grid transition-[grid-template-rows,opacity] duration-500 ease-out md:grid-rows-[1fr] md:opacity-100", servicesExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}><div className="min-h-0 overflow-hidden">{filtered.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((service) => {
                 const Icon = service.icon;
                 const active = selected.id === service.id;
-                return <button key={service.id} type="button" aria-pressed={active} onClick={() => chooseService(service.id)} className={cn("group flex min-h-28 flex-col items-start justify-between rounded-2xl border bg-background/45 p-3.5 text-left outline-none transition-[border-color,background-color,box-shadow,color] hover:border-primary/25 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring", active && "border-primary/45 bg-primary/10 shadow-[0_0_32px_-20px_var(--glow-lime)]")}><span className={`grid size-10 place-items-center rounded-xl ${service.color}`}><Icon className="size-4" /></span><span className="w-full"><span className="flex items-center justify-between gap-2 text-sm font-medium">{service.title}<ChevronRight className="size-4 text-muted-foreground" /></span><span className="mt-0.5 block text-[11px] text-muted-foreground">{service.hint}</span></span></button>;
+                return <button key={service.id} type="button" aria-pressed={active} onClick={() => chooseService(service.id)} className={cn("group flex min-h-28 flex-col items-start justify-between rounded-2xl border bg-background/45 p-3.5 text-left outline-none transition-[border-color,background-color,box-shadow,color] hover:border-primary/25 hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring", active && "border-primary/45 bg-primary/10 shadow-[0_0_32px_-20px_var(--glow-lime)]")}><span className={`grid size-10 place-items-center rounded-xl ${service.color}`}><Icon className="size-4" /></span><span className="w-full"><span className="flex items-center justify-between gap-2 text-sm font-medium">{t(`payments.service.${service.id}.title`, service.title)}<ChevronRight className="size-4 text-muted-foreground" /></span><span className="mt-0.5 block text-[11px] text-muted-foreground">{t(`payments.service.${service.id}.hint`, service.hint)}</span></span></button>;
               })}
-            </div> : <div className="grid min-h-64 place-items-center text-center"><div><Search className="mx-auto size-7 text-muted-foreground" /><p className="mt-3 font-medium">Ничего не найдено</p><p className="mt-1 text-sm text-muted-foreground">Попробуйте изменить запрос.</p></div></div>}</div></div>
-            {!servicesExpanded ? <button type="button" onClick={() => setServicesExpanded(true)} className="flex w-full items-center justify-between rounded-2xl border bg-background/35 p-4 text-left font-medium transition-[border-color,background-color] hover:border-primary/25 hover:bg-secondary/35 md:hidden"><span>{selected.title}</span><span className="text-xs text-muted-foreground">Изменить услугу</span></button> : null}
+            </div> : <div className="grid min-h-64 place-items-center text-center"><div><Search className="mx-auto size-7 text-muted-foreground" /><p className="mt-3 font-medium">{t("payments.search.empty", "Ничего не найдено")}</p><p className="mt-1 text-sm text-muted-foreground">{t("payments.search.emptyHint", "Попробуйте изменить запрос.")}</p></div></div>}</div></div>
+            {!servicesExpanded ? <button type="button" onClick={() => setServicesExpanded(true)} className="flex w-full items-center justify-between rounded-2xl border bg-background/35 p-4 text-left font-medium transition-[border-color,background-color] hover:border-primary/25 hover:bg-secondary/35 md:hidden"><span>{selectedTitle}</span><span className="text-xs text-muted-foreground">{t("payments.service.change", "Изменить услугу")}</span></button> : null}
           </CardContent>
         </Card>
 
-        <Card className="h-fit xl:sticky xl:top-[88px]">
-          <CardHeader className="border-b"><div className="flex items-center gap-3"><span className={`grid size-11 place-items-center rounded-xl ${selected.color}`}><SelectedIcon className="size-5" /></span><div><CardTitle>{selected.title}</CardTitle><CardDescription>{selected.hint}</CardDescription></div></div></CardHeader>
+        <Card className="h-fit min-w-0 2xl:sticky 2xl:top-[88px]">
+          <CardHeader className="border-b"><div className="flex items-center gap-3"><span className={`grid size-11 place-items-center rounded-xl ${selected.color}`}><SelectedIcon className="size-5" /></span><div><CardTitle>{selectedTitle}</CardTitle><CardDescription>{selectedHint}</CardDescription></div></div></CardHeader>
           <CardContent className="pt-5">
             <form onSubmit={form.handleSubmit(submitPayment)} className="space-y-5">
-              <SmartSuggestions suggestions={paymentSuggestions[selected.id] ?? [{ label: "Последние реквизиты", value: "408-219-55", meta: selected.hint, kind: "recent" }]} value={accountValue} onSelect={(value) => form.setValue("account", value, { shouldValidate: true })} title="Часто используемые" />
-              <div className="space-y-2"><Label htmlFor="payment-account">{selected.id === "mobile" ? "Номер телефона" : "Реквизиты"}</Label><Input id="payment-account" placeholder={selected.placeholder} autoComplete="off" value={accountValue} onChange={(event) => form.setValue("account", maskServiceValue(event.target.value), { shouldDirty: true, shouldValidate: true })} />{form.formState.errors.account ? <p className="text-xs text-destructive">{form.formState.errors.account.message}</p> : null}</div>
-              {"extraLabel" in selected ? <div className="space-y-2"><Label htmlFor="payment-extra">{selected.extraLabel}</Label><Input id="payment-extra" placeholder={selected.extraPlaceholder} {...form.register("extra")} /></div> : null}
-              <div className="space-y-2"><Label htmlFor="payment-amount">Сумма</Label><ResponsiveAmountInput id="payment-amount" value={amountValue} onChange={(value) => form.setValue("amount", value, { shouldDirty: true, shouldValidate: true })} />{form.formState.errors.amount ? <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p> : null}<AmountPresets onSelect={(value) => form.setValue("amount", value, { shouldValidate: true })} /></div>
-              <div className="space-y-2"><Label htmlFor="payment-schedule" className="flex items-center gap-2"><CalendarClock className="size-4 text-primary" />Дата и время платежа</Label><Input id="payment-schedule" type="datetime-local" {...form.register("scheduleAt")} /><p className="text-xs text-muted-foreground">Оставьте пустым, чтобы оплатить сразу.</p></div>
+              <SmartSuggestions suggestions={localizedSuggestions} value={accountValue} onSelect={(value) => form.setValue("account", value, { shouldValidate: true })} title={t("payments.suggestions.title", "Часто используемые")} />
+              <div className="space-y-2"><Label htmlFor="payment-account">{selected.id === "mobile" ? t("payments.account.phone", "Номер телефона") : t("payments.account.details", "Реквизиты")}</Label><Input id="payment-account" placeholder={t(`payments.service.${selected.id}.placeholder`, selected.placeholder)} autoComplete="off" value={accountValue} onChange={(event) => form.setValue("account", maskServiceValue(event.target.value), { shouldDirty: true, shouldValidate: true })} />{form.formState.errors.account ? <p className="text-xs text-destructive">{t(form.formState.errors.account.message ?? "payments.validation.account")}</p> : null}</div>
+              {"extraLabel" in selected ? <div className="space-y-2"><Label htmlFor="payment-extra">{t(`payments.service.${selected.id}.extraLabel`, selected.extraLabel)}</Label><Input id="payment-extra" placeholder={t(`payments.service.${selected.id}.extraPlaceholder`, selected.extraPlaceholder)} {...form.register("extra")} /></div> : null}
+              <div className="space-y-2"><Label htmlFor="payment-amount">{t("payments.amount", "Сумма")}</Label><ResponsiveAmountInput id="payment-amount" value={amountValue} onChange={(value) => form.setValue("amount", value, { shouldDirty: true, shouldValidate: true })} />{form.formState.errors.amount ? <p className="text-xs text-destructive">{t(form.formState.errors.amount.message ?? "payments.validation.amount")}</p> : null}<AmountPresets onSelect={(value) => form.setValue("amount", value, { shouldValidate: true })} /></div>
+              <div className="space-y-2"><Label htmlFor="payment-schedule" className="flex items-center gap-2"><CalendarClock className="size-4 text-primary" />{t("payments.schedule.label", "Дата и время платежа")}</Label><Input id="payment-schedule" type="datetime-local" {...form.register("scheduleAt")} /><p className="text-xs text-muted-foreground">{t("payments.schedule.hint", "Оставьте пустым, чтобы оплатить сразу.")}</p></div>
               <SourceAccount />
-              <FeeBreakdown fee={currentFee} description={selected.feeRate ? "Комиссия рассчитывается до подтверждения и включается в итоговое списание." : "Для выбранной услуги комиссия банка отсутствует."} rows={[{ label: "Тариф", value: selected.feeRate ? `${selected.feeRate * 100}%` : "0%" }, { label: "Максимальная сумма", value: "300 000 ₽" }]} />
-              <Button type="submit" size="lg" className="w-full"><QrCode />Продолжить</Button>
+              <FeeBreakdown fee={currentFee} title={t("payments.fee.title", "Комиссия")} description={selected.feeRate ? t("payments.fee.description", "Комиссия рассчитывается до подтверждения и включается в итоговое списание.") : t("payments.fee.none", "Для выбранной услуги комиссия банка отсутствует.")} rows={[{ label: t("payments.fee.rate", "Тариф"), value: selected.feeRate ? `${selected.feeRate * 100}%` : "0%" }, { label: t("payments.fee.maximum", "Максимальная сумма"), value: "300 000 ₽" }]} />
+              <Button type="submit" size="lg" className="w-full"><QrCode />{t("action.continue", "Продолжить")}</Button>
             </form>
           </CardContent>
         </Card>
       </div>
       <Card className="mt-4">
-        <CardHeader><CardTitle>Шаблоны и автоплатежи</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("payments.templates.title", "Шаблоны и автоплатежи")}</CardTitle></CardHeader>
         <CardContent className="grid gap-2 sm:grid-cols-3">
-          <Template title="Мобильный" meta="+7 921 •• 35 · 700 ₽" initials="М" />
-          <Template title="Домашний интернет" meta="Лицевой счёт •• 408" initials="WI" />
-          <Template title="Квартплата" meta="Каждое 10 число" initials="Д" />
+          <Template title={t("payments.template.mobile", "Мобильный")} meta="+7 921 •• 35 · 700 ₽" initials="М" />
+          <Template title={t("payments.template.internet", "Домашний интернет")} meta={t("payments.template.internetMeta", "Лицевой счёт •• 408")} initials="WI" />
+          <Template title={t("payments.template.rent", "Квартплата")} meta={t("payments.template.rentMeta", "Каждое 10 число")} initials="Д" />
         </CardContent>
       </Card>
-      <ReviewDialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) setDraft(null); }} title="Проверьте платёж" description={`Оплата категории «${selected.title}».`} rows={draft ? [{ label: "Услуга", value: selected.title }, { label: "Реквизиты", value: draft.account }, { label: "Сумма", value: formatRubles(draft.amount) }, { label: "Комиссия", value: formatRubles(Math.round(Number(draft.amount.replace(/\s/g, "")) * selected.feeRate)) }, ...(draft.scheduleAt ? [{ label: "Исполнить", value: new Date(draft.scheduleAt).toLocaleString("ru-RU") }] : [])] : []} confirmLabel="Оплатить" onConfirm={() => { if (draft) completePayment(draft); }} />
+      <div className="mt-4"><BankOfferGrid context="payments" /></div>
+      <ReviewDialog open={Boolean(draft)} onOpenChange={(open) => { if (!open) setDraft(null); }} title={t("payments.review.title", "Проверьте платёж")} description={t("payments.review.description", "Оплата категории «{category}».", { category: selectedTitle })} rows={draft ? [{ label: t("payments.detail.service", "Услуга"), value: selectedTitle }, { label: t("payments.account.details", "Реквизиты"), value: draft.account }, { label: t("payments.amount", "Сумма"), value: formatRubles(draft.amount) }, { label: t("payments.fee.title", "Комиссия"), value: formatRubles(Math.round(Number(draft.amount.replace(/\s/g, "")) * selected.feeRate)) }, ...(draft.scheduleAt ? [{ label: t("payments.review.execute", "Исполнить"), value: new Date(draft.scheduleAt).toLocaleString(locale) }] : [])] : []} confirmLabel={t("action.pay", "Оплатить")} onConfirm={() => { if (draft) completePayment(draft); }} />
     </>
   );
 }
 
 function Template({ title, meta, initials }: { title: string; meta: string; initials: string }) {
-  return <button type="button" onClick={() => toast.success(`Шаблон «${title}» выбран`)} className="flex items-center gap-3 rounded-xl border bg-background/40 p-3 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 place-items-center rounded-xl bg-secondary text-xs font-semibold">{initials}</span><span><span className="block text-sm font-medium">{title}</span><span className="block text-xs text-muted-foreground">{meta}</span></span><ChevronRight className="ml-auto size-4 text-muted-foreground" /></button>;
+  const { t } = useI18n();
+  return <button type="button" onClick={() => toast.success(t("payments.template.selected", "Шаблон «{title}» выбран", { title }))} className="flex items-center gap-3 rounded-xl border bg-background/40 p-3 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 place-items-center rounded-xl bg-secondary text-xs font-semibold">{initials}</span><span><span className="block text-sm font-medium">{title}</span><span className="block text-xs text-muted-foreground">{meta}</span></span><ChevronRight className="ml-auto size-4 text-muted-foreground" /></button>;
 }

@@ -12,6 +12,7 @@ import type { Theme } from "@/types";
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { SecurityGate } from "@/components/security/security-gate";
 
 export function AppProviders({ initialTheme, initialPersonalization, initialLocale, initialDictionary, children }: { initialTheme: Theme; initialPersonalization: PersonalizationSettings; initialLocale: Locale; initialDictionary: Dictionary; children: React.ReactNode }) {
   return (
@@ -22,6 +23,7 @@ export function AppProviders({ initialTheme, initialPersonalization, initialLoca
             <TooltipProvider delayDuration={250}>
               {children}
               <InitialLoader />
+              <SecurityGate />
               <CookieBanner />
               <AppToaster />
             </TooltipProvider>

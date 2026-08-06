@@ -10,12 +10,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check": "bun run lint && bun run typecheck",
+    "i18n:check": "bun scripts/check-i18n.mjs",
+    "test:unit": "bun test",
+    "check": "bun run lint && bun run typecheck && bun run i18n:check && bun run test:unit",
     "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
     "@number-flow/react": "^0.6.2",
+    "@phosphor-icons/react": "^2.1.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.28.0",

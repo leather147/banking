@@ -16,7 +16,7 @@ const groupMeta = {
 } satisfies Record<GroupId, { label: string; icon: typeof Navigation }>;
 
 const labels: Record<string, string> = {
-  home: "Главная", payments: "Платежи", cards: "Карты", history: "История", analytics: "Аналитика", services: "Сервисы",
+  home: "Главная", payments: "Платежи", cards: "Карты", history: "Операции", analytics: "Аналитика", services: "Сервисы",
   transfer: "Перевести", "top-up": "Пополнить", payment: "Оплатить",
   pulse: "Финансовый пульс", spending: "Расходы", upcoming: "Предстоящие", goals: "Цели",
 };

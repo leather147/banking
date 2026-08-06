@@ -47,6 +47,9 @@ export function ThemeProvider({ initialTheme, children }: { initialTheme: Theme;
     const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
     const speed = Number.parseFloat(getComputedStyle(root).getPropertyValue("--motion-speed")) || 1;
     const duration = Math.min(1800, 820 / speed);
+    const fadeDuration = 340;
+    const totalDuration = duration + fadeDuration;
+    const coverOffset = duration / totalDuration;
     root.style.setProperty("--theme-ripple-x", `${x}px`);
     root.style.setProperty("--theme-ripple-y", `${y}px`);
     root.dataset.themeDirection = nextTheme;
@@ -74,11 +77,12 @@ export function ThemeProvider({ initialTheme, children }: { initialTheme: Theme;
     const scale = (radius * 2.12) / 24;
     const animation = ripple.animate(
       [
-        { transform: "translate(-50%, -50%) scale(0)", opacity: 0.9 },
-        { transform: `translate(-50%, -50%) scale(${scale})`, opacity: 0.78, offset: 0.72 },
+        { transform: "translate(-50%, -50%) scale(0)", opacity: 1 },
+        { transform: `translate(-50%, -50%) scale(${scale})`, opacity: 1, offset: coverOffset },
+        { transform: `translate(-50%, -50%) scale(${scale})`, opacity: 1, offset: Math.min(0.94, coverOffset + 0.08) },
         { transform: `translate(-50%, -50%) scale(${scale})`, opacity: 0 },
       ],
-      { duration: duration + 240, easing: "cubic-bezier(0.16, 0.8, 0.2, 1)", fill: "forwards" },
+      { duration: totalDuration, easing: "cubic-bezier(0.16, 0.8, 0.2, 1)", fill: "forwards" },
     );
     animationRef.current = animation;
     // Switch underneath the covering circle, then let the same circle fade.
@@ -86,7 +90,7 @@ export function ThemeProvider({ initialTheme, children }: { initialTheme: Theme;
     applyTimerRef.current = window.setTimeout(() => {
       applyTimerRef.current = null;
       if (themeRef.current === nextTheme) applyTheme(nextTheme);
-    }, duration * 0.7);
+    }, duration + 16);
     animation.finished.catch(() => undefined).finally(() => {
       if (themeRef.current === nextTheme && !document.documentElement.classList.contains(nextTheme)) applyTheme(nextTheme);
       if (rippleRef.current === ripple) rippleRef.current = null;

@@ -8,6 +8,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { OperationStartButton } from "@/components/operations/operation-start-button";
 import { usePersonalization } from "@/components/providers/personalization-provider";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { OperationKind } from "@/lib/operations";
@@ -22,9 +23,10 @@ const paymentRoutes = [
 
 export function PaymentNavigation({ active }: { active: OperationKind | "services" }) {
   const { settings } = usePersonalization();
+  const { t } = useI18n();
   const transition = { duration: 0.42 / settings.motionSpeed, ease: MOTION_EASINGS[settings.easingMicro].value };
   return (
-    <nav aria-label="Платежи и переводы" className="hide-scrollbar mb-5 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4">
+    <nav aria-label={t("paymentNav.aria", "Платежи и переводы")} className="hide-scrollbar mb-5 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4">
       {paymentRoutes.map(({ label, description, kind, icon: Icon }) => {
         const selected = active === kind;
         const className = cn(
@@ -32,14 +34,14 @@ export function PaymentNavigation({ active }: { active: OperationKind | "service
           selected && "border-primary/55 bg-primary/12 font-bold text-primary shadow-[0_0_30px_-18px_var(--glow-lime)]",
         );
         return (
-          <OperationStartButton key={kind} kind={kind} className={className} title={`Начать новую операцию: ${label.toLowerCase()}`}>
+          <OperationStartButton key={kind} kind={kind} className={className} title={t("paymentNav.start", "Начать новую операцию: {label}", { label: t(`paymentNav.${kind}.label`, label).toLowerCase() })}>
             {selected ? <motion.span layoutId="payment-nav-active" className="absolute inset-0 z-0 bg-primary/8" transition={transition} /> : null}
             <span className={cn("relative z-10 grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground transition-colors group-hover:text-foreground", selected && "bg-primary text-primary-foreground")}>
               <Icon className={cn("size-4", selected && "fill-current/20 stroke-[2.5]")} />
             </span>
             <span className="relative z-10 min-w-0">
-              <span className="block text-sm font-medium">{label}</span>
-              <span className="hidden truncate text-[10px] text-muted-foreground xl:block">{description}</span>
+              <span className="block text-sm font-medium">{t(`paymentNav.${kind}.label`, label)}</span>
+              <span className="hidden truncate text-[10px] text-muted-foreground xl:block">{t(`paymentNav.${kind}.description`, description)}</span>
             </span>
           </OperationStartButton>
         );
@@ -47,28 +49,29 @@ export function PaymentNavigation({ active }: { active: OperationKind | "service
       <Link href="/services" className={cn("glass-panel group relative isolate flex min-w-[168px] items-center gap-3 overflow-hidden rounded-2xl border p-3 outline-none transition-[background-color,border-color,box-shadow,color] hover:border-primary/25 hover:bg-secondary/55 focus-visible:ring-2 focus-visible:ring-ring sm:min-w-0", active === "services" && "border-primary/55 bg-primary/12 font-bold text-primary shadow-[0_0_30px_-18px_var(--glow-lime)]")}>
         {active === "services" ? <motion.span layoutId="payment-nav-active" className="absolute inset-0 z-0 bg-primary/8" transition={transition} /> : null}
         <span className={cn("relative z-10 grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground transition-colors group-hover:text-foreground", active === "services" && "bg-primary text-primary-foreground")}><MoreHorizontal className={cn("size-4", active === "services" && "fill-current/20 stroke-[2.5]")} /></span>
-        <span className="relative z-10 min-w-0"><span className="block text-sm font-medium">Ещё</span><span className="hidden truncate text-[10px] text-muted-foreground xl:block">Все продукты и сервисы</span></span>
+        <span className="relative z-10 min-w-0"><span className="block text-sm font-medium">{t("paymentNav.services.label", "Ещё")}</span><span className="hidden truncate text-[10px] text-muted-foreground xl:block">{t("paymentNav.services.description", "Все продукты и сервисы")}</span></span>
       </Link>
     </nav>
   );
 }
 
-export function SourceAccount({ label = "Счёт списания", title, balance = 326840 }: { label?: string; title?: string; balance?: number }) {
+export function SourceAccount({ label, title, balance = 326840 }: { label?: string; title?: string; balance?: number }) {
   const { settings } = usePersonalization();
+  const { t } = useI18n();
   const accountTitle = title ?? `${settings.brandName} Black`;
   return (
     <div className="rounded-2xl border bg-background/55 p-3.5">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => toast("Выбор другого счёта доступен как демонстрационная заглушка")}>Изменить<ChevronDown className="size-3" /></Button>
+        <span className="text-xs text-muted-foreground">{label ?? t("sourceAccount.label", "Счёт списания")}</span>
+        <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => toast(t("sourceAccount.toast", "Выбор другого счёта доступен как демонстрационная заглушка"))}>{t("action.change", "Изменить")}<ChevronDown className="size-3" /></Button>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span className="bank-card-art grid size-11 shrink-0 place-items-center rounded-xl text-white"><WalletCards className="size-5" /></span>
-        <span className="min-w-0">
+        <span className="min-w-[9rem] flex-1">
           <span className="block truncate text-sm font-medium">{accountTitle} •• 0932</span>
-          <span className="block text-xs text-muted-foreground">Основная карта</span>
+          <span className="block text-xs text-muted-foreground">{t("sourceAccount.primary", "Основная карта")}</span>
         </span>
-        <span className="ml-auto text-right font-mono text-sm font-semibold tabular-nums"><NumberFlow value={balance} format={{ style: "currency", currency: "RUB", maximumFractionDigits: 0 }} /></span>
+        <span className="ml-auto shrink-0 text-right font-mono text-sm font-semibold tabular-nums"><NumberFlow value={balance} format={{ style: "currency", currency: "RUB", maximumFractionDigits: 0 }} /></span>
       </div>
     </div>
   );
@@ -86,8 +89,10 @@ export function AmountPresets({ onSelect }: { onSelect: (value: string) => void 
 
 export type ReviewRow = { label: string; value: string };
 
-export function ReviewDialog({ open, onOpenChange, title, description, rows, confirmLabel = "Подтвердить", onConfirm }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; rows: ReviewRow[]; confirmLabel?: string; onConfirm: () => void }) {
+export function ReviewDialog({ open, onOpenChange, title, description, rows, confirmLabel, onConfirm }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; rows: ReviewRow[]; confirmLabel?: string; onConfirm: () => void }) {
   const [slideMode, setSlideMode] = React.useState(false);
+  const { t } = useI18n();
+  const effectiveConfirmLabel = confirmLabel ?? t("action.confirm", "Подтвердить");
 
   React.useEffect(() => {
     const media = window.matchMedia("(max-width: 767px), (pointer: coarse)");
@@ -106,20 +111,21 @@ export function ReviewDialog({ open, onOpenChange, title, description, rows, con
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="divide-y rounded-2xl border bg-background/55 px-4">
-          {rows.map((row) => <div key={row.label} className="flex items-start justify-between gap-5 py-3 text-sm"><span className="text-muted-foreground">{row.label}</span><span className="max-w-[65%] text-right font-medium">{row.value}</span></div>)}
+          {rows.map((row) => <div key={row.label} className="grid min-w-0 grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] items-start gap-3 py-3 text-sm"><span className="min-w-0 text-muted-foreground">{row.label}</span><span className="min-w-0 break-words text-right font-medium">{row.value}</span></div>)}
         </div>
-        <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-3 text-xs text-muted-foreground"><Check className="size-4 shrink-0 text-primary" />Это демонстрация интерфейса: деньги не списываются.</div>
+        <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-3 text-xs text-muted-foreground"><Check className="size-4 shrink-0 text-primary" />{t("review.demoNotice", "Это демонстрация интерфейса: деньги не списываются.")}</div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Вернуться</Button>
-          {slideMode ? <SlideToConfirm label={confirmLabel} onConfirm={onConfirm} /> : <Button type="button" onClick={onConfirm}>{confirmLabel}</Button>}
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("action.return", "Вернуться")}</Button>
+          {slideMode ? <SlideToConfirm label={effectiveConfirmLabel} onConfirm={onConfirm} /> : <Button type="button" onClick={onConfirm}>{effectiveConfirmLabel}</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function FeeBreakdown({ fee, title = "Комиссия", description, rows = [] }: { fee: number; title?: string; description: string; rows?: { label: string; value: string }[] }) {
-  return <div className="rounded-2xl border bg-background/32 p-3.5"><div className="flex items-start gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Info className="size-4" /></span><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-3"><p className="text-sm font-bold">{title}</p><p className={cn("font-mono text-sm font-bold", fee === 0 ? "text-primary" : "text-foreground")}>{formatRubles(fee)}</p></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div></div>{rows.length ? <div className="mt-3 divide-y border-t pt-1">{rows.map((row) => <div key={row.label} className="flex items-center justify-between gap-4 py-2 text-xs"><span className="text-muted-foreground">{row.label}</span><span className="font-semibold">{row.value}</span></div>)}</div> : null}</div>;
+export function FeeBreakdown({ fee, title, description, rows = [] }: { fee: number; title?: string; description: string; rows?: { label: string; value: string }[] }) {
+  const { t } = useI18n();
+  return <div className="rounded-2xl border bg-background/32 p-3.5"><div className="flex items-start gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Info className="size-4" /></span><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-3"><p className="text-sm font-bold">{title ?? t("payments.fee.title", "Комиссия")}</p><p className={cn("font-mono text-sm font-bold", fee === 0 ? "text-primary" : "text-foreground")}>{formatRubles(fee)}</p></div><p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p></div></div>{rows.length ? <div className="mt-3 divide-y border-t pt-1">{rows.map((row) => <div key={row.label} className="flex items-center justify-between gap-4 py-2 text-xs"><span className="text-muted-foreground">{row.label}</span><span className="font-semibold">{row.value}</span></div>)}</div> : null}</div>;
 }
 
 export function ResponsiveAmountInput({ id, value, onChange, currency = "₽", placeholder = "0" }: { id: string; value: string; onChange: (value: string) => void; currency?: string; placeholder?: string }) {
@@ -133,6 +139,7 @@ export function SlideToConfirm({ label, onConfirm }: { label: string; onConfirm:
   const progressRef = React.useRef(0);
   const trackRef = React.useRef<HTMLDivElement>(null);
   const activeRef = React.useRef(false);
+  const { t } = useI18n();
 
   const commitProgress = React.useCallback((next: number) => {
     progressRef.current = next;
@@ -155,9 +162,9 @@ export function SlideToConfirm({ label, onConfirm }: { label: string; onConfirm:
     } else commitProgress(0);
   }
 
-  return <div ref={trackRef} role="slider" aria-label={`Проведите, чтобы ${label.toLowerCase()}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} tabIndex={0} onKeyDown={(event) => { if (event.key === "ArrowRight") commitProgress(Math.min(1, progressRef.current + 0.12)); if (event.key === "ArrowLeft") commitProgress(Math.max(0, progressRef.current - 0.12)); if ((event.key === "Enter" || event.key === " ") && progressRef.current >= 0.88) onConfirm(); }} onPointerDown={(event) => { activeRef.current = true; event.currentTarget.setPointerCapture(event.pointerId); update(event.clientX); }} onPointerMove={(event) => { if (activeRef.current) update(event.clientX); }} onPointerUp={finish} onPointerCancel={() => { activeRef.current = false; commitProgress(0); }} className="relative h-14 min-w-0 flex-1 touch-none select-none overflow-hidden rounded-2xl border border-primary/25 bg-secondary/72 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+  return <div ref={trackRef} role="slider" aria-label={t("slideConfirm.slide", "Проведите, чтобы {label}", { label: label.toLowerCase() })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} tabIndex={0} onKeyDown={(event) => { if (event.key === "ArrowRight") commitProgress(Math.min(1, progressRef.current + 0.12)); if (event.key === "ArrowLeft") commitProgress(Math.max(0, progressRef.current - 0.12)); if ((event.key === "Enter" || event.key === " ") && progressRef.current >= 0.88) onConfirm(); }} onPointerDown={(event) => { activeRef.current = true; event.currentTarget.setPointerCapture(event.pointerId); update(event.clientX); }} onPointerMove={(event) => { if (activeRef.current) update(event.clientX); }} onPointerUp={finish} onPointerCancel={() => { activeRef.current = false; commitProgress(0); }} className="relative h-14 min-w-0 flex-1 touch-none select-none overflow-hidden rounded-2xl border border-primary/25 bg-secondary/72 outline-none focus-visible:ring-2 focus-visible:ring-ring">
     <span aria-hidden="true" className="absolute inset-y-0 left-0 bg-primary/24 transition-[width] duration-75" style={{ width: `${progress * 100}%` }} />
-    <span className="pointer-events-none absolute inset-0 grid place-items-center px-14 text-center text-xs font-bold"><span className={cn("transition-opacity", progress > 0.58 && "opacity-40")}>{progress > 0.75 ? `Отпустите, чтобы ${label.toLowerCase()}` : `Проведите, чтобы ${label.toLowerCase()}`}</span></span>
+    <span className="pointer-events-none absolute inset-0 grid place-items-center px-14 text-center text-xs font-bold"><span className={cn("transition-opacity", progress > 0.58 && "opacity-40")}>{progress > 0.75 ? t("slideConfirm.release", "Отпустите, чтобы {label}", { label: label.toLowerCase() }) : t("slideConfirm.slide", "Проведите, чтобы {label}", { label: label.toLowerCase() })}</span></span>
     <span
       aria-hidden="true"
       className="absolute top-1 grid size-12 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_22px_-8px_var(--glow-lime)]"

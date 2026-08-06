@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Accessibility, BadgeRussianRuble, Cookie, FileCheck2, Landmark, LockKeyhole, ScanFace, ShieldAlert } from "lucide-react";
+import { Accessibility, BadgeRussianRuble, BookOpenText, Cookie, FileCheck2, Landmark, LockKeyhole, ScanFace, ShieldAlert } from "lucide-react";
 
 export type LegalDocument = {
   slug: string;
@@ -18,6 +18,7 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
   { slug: "anti-fraud", icon: ShieldAlert, titleKey: "legal.doc.fraud.title", summaryKey: "legal.doc.fraud.summary", updated: "04.08.2026" },
   { slug: "requisites", icon: Landmark, titleKey: "legal.doc.requisites.title", summaryKey: "legal.doc.requisites.summary", updated: "01.08.2026" },
   { slug: "accessibility", icon: Accessibility, titleKey: "legal.doc.accessibility.title", summaryKey: "legal.doc.accessibility.summary", updated: "18.07.2026" },
+  { slug: "licenses", icon: BookOpenText, titleKey: "settings.section.licenses", summaryKey: "settings.section.licenses.description", updated: "06.08.2026" },
 ];
 
 export const LEGAL_FAQS = ["status", "data", "cancel", "fraud", "support", "cookies"] as const;

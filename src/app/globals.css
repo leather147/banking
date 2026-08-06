@@ -42,6 +42,9 @@
   --ease-modal: cubic-bezier(0.22, 0.88, 0.24, 1);
   --ease-micro: cubic-bezier(0.12, 0.82, 0.18, 1);
   --route-perspective: 34px;
+  --mobile-dock-height: 5.5rem;
+  --mobile-dock-gap: 0.65rem;
+  --mobile-dock-safe-space: calc(var(--mobile-dock-height) + var(--mobile-dock-gap) + env(safe-area-inset-bottom, 0px) + 1.25rem);
   --radius: calc(0.9rem * var(--ui-radius-scale));
   --glow-lime: oklch(0.78 0.2 126);
   --glow-orange: oklch(0.7 0.2 47);
@@ -272,6 +275,57 @@ input,
   background: var(--glow-blue);
 }
 
+.dynamic-background-orb {
+  position: fixed;
+  z-index: -1;
+  left: var(--pointer-x, 50vw);
+  top: var(--pointer-y, 34vh);
+  width: min(44rem, 70vw);
+  aspect-ratio: 1;
+  pointer-events: none;
+  border-radius: 9999px;
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(.86);
+  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 22%, transparent), transparent 66%);
+  filter: blur(38px) saturate(125%);
+  transition: left calc(760ms / var(--motion-speed)) var(--ease-panel), top calc(760ms / var(--motion-speed)) var(--ease-panel), opacity calc(620ms / var(--motion-speed)) var(--ease-panel), transform calc(720ms / var(--motion-speed)) var(--ease-panel);
+}
+
+[data-dynamic-background="cursor"] .dynamic-background-orb,
+[data-dynamic-background="all"] .dynamic-background-orb,
+[data-operation-background="on"] .dynamic-background-orb {
+  opacity: calc(var(--background-intensity) * .72);
+  transform: translate3d(-50%, -50%, 0) scale(1);
+}
+
+[data-background="off"] .dynamic-background-orb { opacity: 0; }
+
+[data-navigation-pulse="on"] .dynamic-background-orb {
+  animation: navigation-background-pulse calc(1050ms / var(--motion-speed)) var(--ease-route) both;
+}
+
+@keyframes navigation-background-pulse {
+  0% { opacity: .05; transform: translate3d(-50%, -50%, 0) scale(.82); }
+  55% { opacity: calc(var(--background-intensity) * .72); }
+  100% { opacity: calc(var(--background-intensity) * .48); transform: translate3d(-50%, -50%, 0) scale(1); }
+}
+
+/* CSS is the last-resort escape hatch when a background tab throttles the
+   loader's React timer. The DOM may remain mounted, but it can never keep the
+   hydrated banking interface blocked indefinitely. */
+.initial-loader-shell {
+  animation: initial-loader-failsafe 4.2s ease-out forwards;
+}
+
+@keyframes initial-loader-failsafe {
+  0%, 78% { opacity: 1; visibility: visible; pointer-events: auto; }
+  100% { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .initial-loader-shell { animation-duration: 1s; }
+}
+
 [data-ambient="off"] .ambient-orb,
 [data-background="off"] .ambient-orb,
 [data-background="off"] .app-grid::before,
@@ -313,7 +367,7 @@ input,
   right: 0;
   bottom: 0;
   left: 0;
-  height: 8.5rem;
+  height: calc(var(--mobile-dock-safe-space) + 3.5rem);
   pointer-events: none;
   background: linear-gradient(to top, color-mix(in oklab, var(--background) var(--mobile-fade-opacity), transparent), transparent);
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.55));
@@ -328,6 +382,16 @@ input,
   --mobile-nav-radius: calc(1.55rem * var(--ui-radius-scale));
   border-radius: var(--mobile-nav-radius);
   overflow: visible;
+  bottom: calc(var(--mobile-dock-gap) + env(safe-area-inset-bottom, 0px));
+  min-height: var(--mobile-dock-height);
+}
+
+.app-page-frame {
+  padding-bottom: var(--mobile-dock-safe-space);
+}
+
+.cookie-banner {
+  bottom: calc(var(--mobile-dock-height) + var(--mobile-dock-gap) + env(safe-area-inset-bottom, 0px) + 0.75rem);
 }
 
 .mobile-nav-item {
@@ -363,6 +427,11 @@ input,
 
 @keyframes skeleton-sweep {
   to { transform: translateX(110%); }
+}
+
+@keyframes analytics-compute {
+  from { transform: scaleX(0.04); opacity: 0.55; }
+  to { transform: scaleX(1); opacity: 1; }
 }
 
 [data-hints="off"] [data-personal-hint] {
@@ -478,11 +547,31 @@ input,
 }
 
 @media (max-width: 767px) {
+  .topbar-profile { order: -1; }
   .ambient-orb {
     width: 18rem;
     height: 18rem;
     filter: blur(76px);
     opacity: 0.1;
+  }
+
+  .glass-panel,
+  .surface-glow {
+    max-width: 100%;
+  }
+
+  [data-radix-popper-content-wrapper] {
+    max-width: 100vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .topbar-profile { order: var(--topbar-order, 99); }
+}
+
+@media (min-width: 768px) {
+  .app-page-frame {
+    padding-bottom: 2.5rem;
   }
 }
 

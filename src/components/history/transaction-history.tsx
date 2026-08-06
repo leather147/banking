@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarDays, Download, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TransactionRow } from "@/components/shared/transaction-row";
 import { operationDetailsPath, operationToTransaction, useOperations } from "@/lib/operations";
+import { DateRangeCalendar } from "@/components/history/date-range-calendar";
+
+const PAGE_SIZE = 6;
 
 export function TransactionHistory() {
   const [operations, , hydrated] = useOperations();
@@ -24,6 +27,7 @@ export function TransactionHistory() {
   const [sort, setSort] = React.useState("newest");
   const [fromDate, setFromDate] = React.useState("");
   const [toDate, setToDate] = React.useState("");
+  const [page, setPage] = React.useState(1);
   const deferredQuery = React.useDeferredValue(query);
   const visible = React.useMemo(() => {
     const latest = Math.max(...operations.map((operation) => new Date(operation.createdAt).getTime()));
@@ -41,7 +45,10 @@ export function TransactionHistory() {
     return matchesQuery && matchesFilter && matchesStatus && matchesCategory && matchesPeriod && matchesFrom && matchesTo;
   }).sort((a, b) => sort === "oldest" ? a.createdAt.localeCompare(b.createdAt) : sort === "amount-high" ? Math.abs(b.amount) - Math.abs(a.amount) : sort === "amount-low" ? Math.abs(a.amount) - Math.abs(b.amount) : b.createdAt.localeCompare(a.createdAt));
   }, [category, deferredQuery, filter, fromDate, operations, period, sort, status, toDate]);
-  const grouped = Object.groupBy(visible, (operation) => operation.createdAt.slice(0, 10));
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paginated = visible.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const grouped = Object.groupBy(paginated, (operation) => operation.createdAt.slice(0, 10));
 
   return (
     <div className="space-y-4">
@@ -49,10 +56,10 @@ export function TransactionHistory() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative min-w-0 flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} className="pl-10" placeholder="Название, категория, получатель или ID" /></div>
           <Tabs value={filter} onValueChange={setFilter}><TabsList className="w-full lg:w-auto"><TabsTrigger className="flex-1 lg:flex-none" value="all">Все</TabsTrigger><TabsTrigger className="flex-1 lg:flex-none" value="income">Поступления</TabsTrigger><TabsTrigger className="flex-1 lg:flex-none" value="expense">Расходы</TabsTrigger></TabsList></Tabs>
-          <Select value={period} onValueChange={setPeriod}><SelectTrigger className="w-full lg:w-36" aria-label="Период операций"><CalendarDays className="size-4" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Весь период</SelectItem><SelectItem value="7">7 дней</SelectItem><SelectItem value="30">30 дней</SelectItem><SelectItem value="90">90 дней</SelectItem></SelectContent></Select>
+          <Select value={period} onValueChange={setPeriod}><SelectTrigger className="w-full lg:w-36" aria-label="Период операций"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Весь период</SelectItem><SelectItem value="7">7 дней</SelectItem><SelectItem value="30">30 дней</SelectItem><SelectItem value="90">90 дней</SelectItem></SelectContent></Select>
           <Button variant={advancedOpen ? "secondary" : "outline"} aria-expanded={advancedOpen} onClick={() => setAdvancedOpen((value) => !value)}><Filter />Фильтры</Button>
         </div>
-        <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${advancedOpen ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}><div className="min-h-0 overflow-hidden"><div className="grid gap-3 border-t pt-4 sm:grid-cols-2 xl:grid-cols-5"><Select value={status} onValueChange={setStatus}><SelectTrigger aria-label="Статус операции"><SelectValue placeholder="Статус" /></SelectTrigger><SelectContent><SelectItem value="all">Все статусы</SelectItem><SelectItem value="completed">Выполнено</SelectItem><SelectItem value="processing">В обработке</SelectItem><SelectItem value="failed">Отклонено</SelectItem></SelectContent></Select><Select value={category} onValueChange={setCategory}><SelectTrigger aria-label="Тип операции"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все типы</SelectItem><SelectItem value="transfer">Переводы</SelectItem><SelectItem value="top-up">Пополнения</SelectItem><SelectItem value="payment">Платежи</SelectItem></SelectContent></Select><Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} aria-label="Дата начала" /><Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} aria-label="Дата окончания" /><Select value={sort} onValueChange={setSort}><SelectTrigger aria-label="Сортировка"><SlidersHorizontal className="size-4" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="newest">Сначала новые</SelectItem><SelectItem value="oldest">Сначала старые</SelectItem><SelectItem value="amount-high">Сумма: по убыванию</SelectItem><SelectItem value="amount-low">Сумма: по возрастанию</SelectItem></SelectContent></Select></div><Button variant="ghost" size="sm" className="mt-3" onClick={() => { setPeriod("all"); setStatus("all"); setCategory("all"); setSort("newest"); setFromDate(""); setToDate(""); }}><RotateCcw />Сбросить фильтры</Button></div></div>
+        <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${advancedOpen ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}><div className="min-h-0 overflow-hidden"><div className="grid gap-3 border-t pt-4 sm:grid-cols-2 xl:grid-cols-4"><Select value={status} onValueChange={setStatus}><SelectTrigger aria-label="Статус операции"><SelectValue placeholder="Статус" /></SelectTrigger><SelectContent><SelectItem value="all">Все статусы</SelectItem><SelectItem value="completed">Выполнено</SelectItem><SelectItem value="processing">В обработке</SelectItem><SelectItem value="failed">Отклонено</SelectItem></SelectContent></Select><Select value={category} onValueChange={setCategory}><SelectTrigger aria-label="Тип операции"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все типы</SelectItem><SelectItem value="transfer">Переводы</SelectItem><SelectItem value="top-up">Пополнения</SelectItem><SelectItem value="payment">Платежи</SelectItem></SelectContent></Select><DateRangeCalendar from={fromDate} to={toDate} onChange={(range) => { setFromDate(range.from); setToDate(range.to); }} /><Select value={sort} onValueChange={setSort}><SelectTrigger aria-label="Сортировка"><SlidersHorizontal className="size-4" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="newest">Сначала новые</SelectItem><SelectItem value="oldest">Сначала старые</SelectItem><SelectItem value="amount-high">Сумма: по убыванию</SelectItem><SelectItem value="amount-low">Сумма: по возрастанию</SelectItem></SelectContent></Select></div><Button variant="ghost" size="sm" className="mt-3" onClick={() => { setPeriod("all"); setStatus("all"); setCategory("all"); setSort("newest"); setFromDate(""); setToDate(""); }}><RotateCcw />Сбросить фильтры</Button></div></div>
       </Card>
       <Card>
         <CardContent className="p-4 sm:p-6">
@@ -68,6 +75,7 @@ export function TransactionHistory() {
                   </div>
                 </section>
               ) : null)}
+              {pageCount > 1 ? <nav aria-label="Пагинация операций" className="flex items-center justify-between gap-3 border-t pt-4"><Button size="sm" variant="outline" disabled={currentPage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}><ChevronLeft />Назад</Button><span className="font-mono text-[10px] text-muted-foreground">{currentPage} / {pageCount} · {visible.length}</span><Button size="sm" variant="outline" disabled={currentPage === pageCount} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>Далее<ChevronRight /></Button></nav> : null}
             </div>
           )}
         </CardContent>

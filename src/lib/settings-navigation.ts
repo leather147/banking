@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import { Accessibility, BellRing, BookOpenText, Braces, Info, Languages, Laptop2, LockKeyhole, MoonStar, Scale, ShieldCheck } from "lucide-react";
+import { Accessibility, BellRing, Braces, Info, Languages, Laptop2, LockKeyhole, MoonStar, Scale, ShieldCheck } from "lucide-react";
 import type { SectionNavItem } from "@/components/shared/section-nav";
 
 export const SETTINGS_ITEMS = [
@@ -12,9 +12,12 @@ export const SETTINGS_ITEMS = [
   { label: "Правовая информация", translationKey: "settings.section.legal", description: "Документы, реквизиты и ответы", descriptionKey: "settings.section.legal.description", href: "/settings/legal", icon: Scale },
   { label: "Устройства", translationKey: "settings.section.devices", description: "Активные сеансы", descriptionKey: "settings.section.devices.description", href: "/settings/devices", icon: Laptop2 },
   { label: "Разработчик", translationKey: "settings.section.developer", description: "Тема, motion и компоновка", descriptionKey: "settings.section.developer.description", href: "/settings/developer", icon: Braces },
-  { label: "Лицензии", translationKey: "settings.section.licenses", description: "Документы зависимостей", descriptionKey: "settings.section.licenses.description", href: "/settings/licenses", icon: BookOpenText },
   { label: "О приложении", translationKey: "settings.section.about", description: "Версия и среда", descriptionKey: "settings.section.about.description", href: "/settings/about", icon: Info },
 ] satisfies (SectionNavItem & { href: Route })[];
+
+export function getVisibleSettingsItems(developerMode: boolean) {
+  return developerMode ? SETTINGS_ITEMS : SETTINGS_ITEMS.filter((item) => item.href !== "/settings/developer");
+}
 
 export function findSettingsItem(pathname: string) {
   return SETTINGS_ITEMS.find((item) => pathname === item.href || (item.href === "/settings/developer" && pathname.startsWith("/settings/developer/")));

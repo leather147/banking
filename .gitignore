@@ -45,3 +45,5 @@ next-env.d.ts
 
 # generated during dev/build from installed dependency metadata
 /public/generated/licenses/
+
+.vercel
