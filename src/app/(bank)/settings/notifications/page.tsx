@@ -1,0 +1,2 @@
+import { PageHeading } from "@/components/shared/page-heading"; import { SettingsPanel } from "@/components/settings/settings-panel"; import { SettingsShell } from "@/components/settings/settings-shell";
+export default function NotificationsPage() { return <><PageHeading title="Уведомления" description="Каналы связи и категории банковских событий." /><SettingsShell><SettingsPanel section="notifications" /></SettingsShell></>; }

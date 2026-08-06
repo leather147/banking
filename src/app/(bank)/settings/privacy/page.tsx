@@ -1,0 +1,2 @@
+import { PageHeading } from "@/components/shared/page-heading"; import { SettingsPanel } from "@/components/settings/settings-panel"; import { SettingsShell } from "@/components/settings/settings-shell";
+export default function PrivacyPage() { return <><PageHeading title="Приватность" description="Управление необязательными cookie и персонализацией." /><SettingsShell><SettingsPanel section="privacy" /></SettingsShell></>; }

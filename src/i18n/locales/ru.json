@@ -1,0 +1,50 @@
+{
+  "app.tagline": "Ваш банк в одном окне",
+  "common.back": "Назад",
+  "nav.section.main": "Мои финансы",
+  "nav.section.extra": "Ещё в Lumen",
+  "nav.home": "Главная",
+  "nav.payments": "Платежи",
+  "nav.cards": "Карты",
+  "nav.history": "История",
+  "nav.analytics": "Аналитика",
+  "nav.services": "Все сервисы",
+  "nav.profile": "Профиль",
+  "nav.settings": "Настройки",
+  "nav.savings": "Накопления",
+  "nav.bonuses": "Бонусы",
+  "nav.subscriptions": "Подписки",
+  "nav.family": "Семейный банк",
+  "nav.support": "Поддержка",
+  "top.search": "Поиск по операциям и сервисам",
+  "top.transfer": "Перевести",
+  "top.servicesOk": "Сервисы работают",
+  "action.topup": "Пополнить",
+  "action.payment": "Оплатить",
+  "dashboard.eyebrow": "Среда, 5 августа",
+  "dashboard.title": "Добрый вечер, Алексей",
+  "dashboard.description": "Ваши финансы собраны в одном спокойном и понятном пространстве.",
+  "dashboard.systems": "Все системы работают",
+  "dashboard.balance": "Общий баланс",
+  "dashboard.last30": "за последние 30 дней",
+  "dashboard.card": "Основная карта",
+  "dashboard.available": "Доступно",
+  "dashboard.active": "Активна",
+  "dashboard.details": "Реквизиты",
+  "dashboard.manage": "Управление",
+  "settings.language.title": "Язык приложения",
+  "settings.language.description": "Словари загружаются отдельными чанками и легко расширяются через pull request.",
+  "settings.language.stored": "язык сохранён"
+  ,"settings.title": "Настройки"
+  ,"settings.description": "Каждый раздел открывается на отдельном маршруте и сохраняет изменения в cookie."
+  ,"settings.section.appearance": "Персонализация"
+  ,"settings.section.accessibility": "Доступность"
+  ,"settings.section.language": "Язык и регион"
+  ,"settings.section.security": "Безопасность"
+  ,"settings.section.notifications": "Уведомления"
+  ,"settings.section.privacy": "Приватность"
+  ,"settings.section.devices": "Устройства"
+  ,"settings.section.developer": "Разработчик"
+  ,"settings.section.licenses": "Лицензии"
+  ,"settings.section.about": "О приложении"
+}

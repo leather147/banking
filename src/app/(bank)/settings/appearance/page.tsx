@@ -1,0 +1,2 @@
+import { PageHeading } from "@/components/shared/page-heading"; import { SettingsPanel } from "@/components/settings/settings-panel"; import { SettingsShell } from "@/components/settings/settings-shell";
+export default function AppearancePage() { return <><PageHeading title="Персонализация" description="Масштаб, glass, glow, скругления, подсказки и поведение анимаций." /><SettingsShell><SettingsPanel section="appearance" /></SettingsShell></>; }
