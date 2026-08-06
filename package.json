@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check": "bun run lint && bun run typecheck",
+    "i18n:check": "bun scripts/check-i18n.mjs",
+    "check": "bun run lint && bun run typecheck && bun run i18n:check",
     "prepare": "husky"
   },
   "dependencies": {

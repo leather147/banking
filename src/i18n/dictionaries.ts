@@ -41,15 +41,24 @@ const productLoaders: Record<Locale, () => Promise<Dictionary>> = {
   fr: () => import("@/i18n/locales/product/fr.json").then((module) => module.default),
 };
 
+const featureLoaders: Record<"en" | "ru", () => Promise<Dictionary>> = {
+  en: () => import("@/i18n/locales/features/en.json").then((module) => module.default),
+  ru: () => import("@/i18n/locales/features/ru.json").then((module) => module.default),
+};
+
 export async function loadDictionary(locale: Locale) {
   // Product copy falls back to English per key while shell and settings remain
   // locale-specific. Separate dynamic imports keep each language out of the
   // initial client chunk until the user selects it.
-  const [core, extension, productBase, productLocale] = await Promise.all([
+  const [coreBase, extensionBase, productBase, featureBase, core, extension, productLocale, featureLocale] = await Promise.all([
+    loaders.en(),
+    extensionLoaders.en(),
+    productLoaders.en(),
+    featureLoaders.en(),
     loaders[locale](),
     extensionLoaders[locale](),
-    productLoaders.en(),
     locale === "en" ? Promise.resolve({}) : productLoaders[locale](),
+    locale === "ru" ? featureLoaders.ru() : Promise.resolve({}),
   ]);
-  return { ...core, ...extension, ...productBase, ...productLocale };
+  return { ...coreBase, ...extensionBase, ...productBase, ...featureBase, ...core, ...extension, ...productLocale, ...featureLocale };
 }
