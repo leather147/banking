@@ -1,0 +1,28 @@
+"use client";
+
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
+import { PageHeading } from "@/components/shared/page-heading";
+import { Card } from "@/components/ui/card";
+import { SETTINGS_ITEMS } from "@/lib/settings-navigation";
+import { usePersonalization } from "@/components/providers/personalization-provider";
+
+export function SettingsOverview() {
+  const { t } = useI18n();
+  const { settings } = usePersonalization();
+  const tileBackgrounds = [
+    "from-fuchsia-500/13 via-transparent to-primary/8",
+    "from-lime-400/14 via-transparent to-emerald-400/8",
+    "from-sky-400/14 via-transparent to-blue-500/8",
+    "from-rose-400/14 via-transparent to-orange-400/8",
+    "from-violet-400/14 via-transparent to-cyan-400/8",
+    "from-emerald-400/14 via-transparent to-primary/8",
+    "from-amber-400/14 via-transparent to-orange-500/8",
+    "from-indigo-400/14 via-transparent to-sky-400/8",
+    "from-primary/16 via-transparent to-fuchsia-400/8",
+    "from-cyan-400/14 via-transparent to-blue-500/8",
+    "from-slate-400/14 via-transparent to-primary/8",
+  ];
+  return <><PageHeading eyebrow={t("settings.identity", "{bank} ID", { bank: settings.brandName })} title={t("settings.title", "Настройки")} description={t("settings.description", "Каждый раздел открывается на отдельном маршруте и сохраняет изменения в cookie.")} /><div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">{SETTINGS_ITEMS.map(({ href, label, translationKey, description, descriptionKey, icon: Icon }, index) => <Link key={href} href={href} className="aspect-square min-w-0 outline-none focus-visible:ring-2 focus-visible:ring-ring"><Card className={`group relative flex size-full flex-col items-start justify-between overflow-hidden bg-gradient-to-br ${tileBackgrounds[index % tileBackgrounds.length]} p-4 transition-[background-color,border-color,box-shadow] hover:border-primary/28 hover:bg-secondary/45 hover:shadow-[0_0_34px_-24px_var(--glow-lime)] sm:p-5`}><span aria-hidden="true" className="absolute -right-7 -top-7 size-24 rounded-full bg-current/5 blur-2xl" /><span className="relative grid size-11 shrink-0 place-items-center rounded-2xl border border-white/8 bg-background/55 shadow-sm backdrop-blur-xl sm:size-12"><Icon className="size-5 text-primary" /></span><span className="relative min-w-0"><span className="flex items-center justify-between gap-2 font-bold"><span>{translationKey ? t(translationKey, label) : label}</span><ChevronRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" /></span><span className="mt-1 line-clamp-3 block text-xs leading-5 text-muted-foreground sm:text-sm">{descriptionKey ? t(descriptionKey, description) : description}</span></span></Card></Link>)}</div></>;
+}

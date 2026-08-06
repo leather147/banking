@@ -1,0 +1,2 @@
+import { PageHeading } from "@/components/shared/page-heading"; import { SettingsPanel } from "@/components/settings/settings-panel"; import { SettingsShell } from "@/components/settings/settings-shell";
+export default function DevicesPage() { return <><PageHeading title="Устройства" description="Доверенные устройства и активные демонстрационные сеансы." /><SettingsShell><SettingsPanel section="devices" /></SettingsShell></>; }
