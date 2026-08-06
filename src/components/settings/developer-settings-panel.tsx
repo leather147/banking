@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
-import { Blend, Braces, CalendarClock, ExternalLink, Gauge, GitBranch, GripVertical, Grid2X2, Layers3, MonitorCog, Move3D, Palette, RotateCcw, Save, Sparkles } from "lucide-react";
+import { Blend, Braces, CalendarClock, Coins, ExternalLink, Gauge, GitBranch, GripVertical, Grid2X2, Layers3, LockKeyhole, MonitorCog, Move3D, Palette, RotateCcw, Save, Sparkles } from "lucide-react";
 import { Reorder } from "motion/react";
 import { toast } from "sonner";
 import { usePersonalization } from "@/components/providers/personalization-provider";
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { MOTION_EASINGS } from "@/lib/motion";
+import { clearLumenCookies } from "@/lib/cookies";
 import {
   ACCENT_PALETTES,
   DEFAULT_DASHBOARD_ORDER,
@@ -31,7 +33,7 @@ import {
 export type DeveloperSection = "theme" | "layout" | "motion" | "system";
 
 const labels: Record<string, string> = {
-  home: "Главная", payments: "Платежи", cards: "Карты", history: "История", analytics: "Аналитика", services: "Сервисы",
+  home: "Главная", payments: "Платежи", cards: "Карты", history: "Операции", analytics: "Аналитика", services: "Сервисы",
   transfer: "Перевод", "top-up": "Пополнение", payment: "Оплата",
   pulse: "Финансовый пульс", spending: "Расходы", upcoming: "Предстоящие", goals: "Цели",
   savings: "Накопления", bonuses: "Бонусы", subscriptions: "Подписки", family: "Семейный банк", support: "Поддержка",
@@ -39,6 +41,8 @@ const labels: Record<string, string> = {
 };
 
 export function DeveloperSettingsPanel({ section }: { section: DeveloperSection }) {
+  const { settings } = usePersonalization();
+  if (!settings.developerMode) return <Card className="mx-auto max-w-xl"><CardHeader><CardTitle className="flex items-center gap-2"><LockKeyhole className="size-5 text-primary" />Режим разработчика скрыт</CardTitle><p className="text-sm leading-6 text-muted-foreground">Откройте раздел «О приложении» и несколько раз нажмите на номер сборки.</p></CardHeader><CardContent><Button asChild className="w-full"><Link href="/settings/about">Перейти к номеру сборки</Link></Button></CardContent></Card>;
   if (section === "theme") return <ThemeDeveloperPanel />;
   if (section === "layout") return <LayoutDeveloperPanel />;
   if (section === "motion") return <MotionDeveloperPanel />;
@@ -104,7 +108,36 @@ function MotionDeveloperPanel() {
 
 function SystemDeveloperPanel() {
   const { settings, setSetting, resetPersonalization } = usePersonalization();
-  return <div className="space-y-4"><Card className="border-primary/25"><CardHeader><CardTitle className="flex items-center gap-2"><CalendarClock className="size-5 text-primary" />Дата, время и тестовые карты</CardTitle><p className="text-sm text-muted-foreground">Операции используют эти значения. Конфигурация хранится в cookie и подходит для демонстрации разных состояний.</p></CardHeader><CardContent className="space-y-5"><Toggle title="Использовать системные дату и время" description="При выключении применяется заданный ниже момент" checked={settings.useSystemDateTime} onChange={(value) => setSetting("useSystemDateTime", value)} /><div className="grid gap-3 sm:grid-cols-2"><div><label htmlFor="developer-date" className="mb-2 block text-sm font-medium">Тестовая дата</label><Input id="developer-date" type="date" value={settings.demoDate} disabled={settings.useSystemDateTime} onChange={(event) => setSetting("demoDate", event.target.value)} /></div><div><label htmlFor="developer-time" className="mb-2 block text-sm font-medium">Тестовое время</label><Input id="developer-time" type="time" value={settings.demoTime} disabled={settings.useSystemDateTime} onChange={(event) => setSetting("demoTime", event.target.value)} /></div></div><SliderRow label="Количество демо-карт" value={settings.demoCardCount} min={1} max={3} step={1} formatted={`${settings.demoCardCount}`} onChange={(value) => setSetting("demoCardCount", Math.round(value))} /></CardContent></Card><Card><CardHeader><CardTitle className="flex items-center gap-2"><Braces className="size-5 text-primary" />Поведение среды</CardTitle><p className="text-sm text-muted-foreground">Экспериментальные параметры интерфейса без изменения банковских сценариев.</p></CardHeader><CardContent className="divide-y pt-1"><Toggle title="Инерционный touch-scroll" description="Нативное продолжение прокрутки после жеста" checked={settings.touchMomentum} onChange={(value) => setSetting("touchMomentum", value)} /><Toggle title="Подъём элементов dock" description="Небольшое масштабирование при наведении указателя" checked={settings.dockMagnification} onChange={(value) => setSetting("dockMagnification", value)} /><Toggle title="Shimmer skeleton" description="Движущийся блик у загружаемых блоков" checked={settings.skeletonShimmer} onChange={(value) => setSetting("skeletonShimmer", value)} /></CardContent></Card><Card><CardHeader><CardTitle className="flex items-center gap-2"><GitBranch className="size-5 text-primary" />Репозиторий проекта</CardTitle><p className="text-sm text-muted-foreground">Исходный код, задачи и pull request для новых переводов интерфейса.</p></CardHeader><CardContent><a href="https://github.com/leather147/banking" target="_blank" rel="noreferrer" className="glass-panel flex items-center gap-3 rounded-2xl border bg-background/35 p-4 outline-none transition-[border-color,background-color] hover:border-primary/30 hover:bg-secondary/35 focus-visible:ring-2 focus-visible:ring-ring"><GitBranch className="size-5 text-primary" /><span className="min-w-0 flex-1"><span className="block font-semibold">leather147/banking</span><span className="block truncate font-mono text-[10px] text-muted-foreground">github.com/leather147/banking</span></span><ExternalLink className="size-4 text-muted-foreground" /></a></CardContent></Card><Button variant="outline" className="w-full" onClick={() => { resetPersonalization(); toast.success("Настройки разработчика сброшены"); }}><RotateCcw />Сбросить конфигурацию интерфейса</Button></div>;
+
+  function resetGroup(label: string, prefixes: string[]) {
+    const count = clearLumenCookies(prefixes);
+    toast.success(`${label}: удалено записей — ${count}`);
+  }
+
+  function resetEverything() {
+    if (!window.confirm("Сбросить настройки, демо-операции, карты, профиль и код-пароль на этом устройстве?")) return;
+    clearLumenCookies();
+    toast.success("Локальные данные приложения сброшены");
+    window.setTimeout(() => window.location.reload(), 250);
+  }
+
+  return <div className="space-y-4">
+    <Card className="border-primary/25"><CardHeader><CardTitle className="flex items-center gap-2"><CalendarClock className="size-5 text-primary" />Дата, время и тестовые карты</CardTitle><p className="text-sm text-muted-foreground">Операции используют эти значения. Конфигурация хранится в cookie и подходит для демонстрации разных состояний.</p></CardHeader><CardContent className="space-y-5"><Toggle title="Использовать системные дату и время" description="При выключении применяется заданный ниже момент" checked={settings.useSystemDateTime} onChange={(value) => setSetting("useSystemDateTime", value)} /><div className="grid gap-3 sm:grid-cols-2"><div><label htmlFor="developer-date" className="mb-2 block text-sm font-medium">Тестовая дата</label><Input id="developer-date" type="date" value={settings.demoDate} disabled={settings.useSystemDateTime} onChange={(event) => setSetting("demoDate", event.target.value)} /></div><div><label htmlFor="developer-time" className="mb-2 block text-sm font-medium">Тестовое время</label><Input id="developer-time" type="time" value={settings.demoTime} disabled={settings.useSystemDateTime} onChange={(event) => setSetting("demoTime", event.target.value)} /></div></div><SliderRow label="Количество демо-карт" value={settings.demoCardCount} min={1} max={3} step={1} formatted={`${settings.demoCardCount}`} onChange={(value) => setSetting("demoCardCount", Math.round(value))} /></CardContent></Card>
+
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Coins className="size-5 text-primary" />Финансовое отображение</CardTitle><p className="text-sm text-muted-foreground">Курсы демонстрационные и фиксированные: интерфейс не выдаёт их за биржевую котировку.</p></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2">
+      <SelectRow label="Валюта приложения" value={settings.currencyCode} onChange={(value) => setSetting("currencyCode", value as typeof settings.currencyCode)} options={[{ value: "RUB", label: "RUB · Российский рубль" }, { value: "USD", label: "USD · Доллар США" }, { value: "EUR", label: "EUR · Евро" }, { value: "CNY", label: "CNY · Юань" }, { value: "KZT", label: "KZT · Тенге" }]} />
+      <SelectRow label="Расходы в операциях" value={settings.expenseSignStyle} onChange={(value) => setSetting("expenseSignStyle", value as typeof settings.expenseSignStyle)} options={[{ value: "signed", label: "Со знаком минус" }, { value: "absolute", label: "Без знака минус" }]} />
+      <SelectRow label="Пак иконок навигации" value={settings.iconPack} onChange={(value) => setSetting("iconPack", value as typeof settings.iconPack)} options={[{ value: "lucide", label: "Lucide" }, { value: "phosphor", label: "Phosphor" }]} />
+      <SelectRow label="Динамический фон" value={settings.dynamicBackground} onChange={(value) => setSetting("dynamicBackground", value as typeof settings.dynamicBackground)} options={[{ value: "off", label: "Выключен" }, { value: "cursor", label: "Следует за курсором" }, { value: "navigation", label: "При навигации" }, { value: "operation", label: "На экранах операций" }, { value: "all", label: "Все эффекты" }]} />
+      <SelectRow label="Повторный запрос код-пароля" value={String(settings.pinReauthMinutes)} onChange={(value) => setSetting("pinReauthMinutes", Number(value))} options={[{ value: "15", label: "Каждые 15 минут" }, { value: "30", label: "Каждые 30 минут" }, { value: "60", label: "Каждый час" }, { value: "240", label: "Каждые 4 часа" }, { value: "1440", label: "Раз в сутки" }]} />
+    </CardContent></Card>
+
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Braces className="size-5 text-primary" />Поведение среды</CardTitle><p className="text-sm text-muted-foreground">Экспериментальные параметры интерфейса без изменения банковских сценариев.</p></CardHeader><CardContent className="divide-y pt-1"><Toggle title="Инерционный touch-scroll" description="Нативное продолжение прокрутки после жеста" checked={settings.touchMomentum} onChange={(value) => setSetting("touchMomentum", value)} /><Toggle title="Подъём элементов dock" description="Небольшое масштабирование при наведении указателя" checked={settings.dockMagnification} onChange={(value) => setSetting("dockMagnification", value)} /><Toggle title="Shimmer skeleton" description="Движущийся блик у загружаемых блоков" checked={settings.skeletonShimmer} onChange={(value) => setSetting("skeletonShimmer", value)} /></CardContent></Card>
+
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><RotateCcw className="size-5 text-primary" />Сброс локальных данных</CardTitle><p className="text-sm text-muted-foreground">Категории сбрасываются независимо. Общий сброс также удаляет тестовые операции и профиль.</p></CardHeader><CardContent className="grid gap-2 sm:grid-cols-2"><Button variant="outline" onClick={() => { resetPersonalization(); toast.success("Персонализация сброшена"); }}><RotateCcw />Персонализация</Button><Button variant="outline" onClick={() => resetGroup("Карты", ["lumen-card-"])}><RotateCcw />Карты</Button><Button variant="outline" onClick={() => resetGroup("Профиль", ["lumen-profile-"])}><RotateCcw />Профиль</Button><Button variant="outline" onClick={() => resetGroup("Безопасность", ["lumen-settings-security", "lumen-security-"])}><RotateCcw />Пароль и безопасность</Button><Button variant="outline" onClick={() => resetGroup("Операции", ["lumen-operation-", "lumen-analytics-"])}><RotateCcw />Операции и аналитика</Button><Button variant="destructive" onClick={resetEverything}><RotateCcw />Сбросить всё</Button></CardContent></Card>
+
+    <Card><CardHeader><CardTitle className="flex items-center gap-2"><GitBranch className="size-5 text-primary" />Репозиторий проекта</CardTitle><p className="text-sm text-muted-foreground">Исходный код, задачи и pull request для новых переводов интерфейса.</p></CardHeader><CardContent><a href="https://github.com/leather147/banking" target="_blank" rel="noreferrer" className="glass-panel flex items-center gap-3 rounded-2xl border bg-background/35 p-4 outline-none transition-[border-color,background-color] hover:border-primary/30 hover:bg-secondary/35 focus-visible:ring-2 focus-visible:ring-ring"><GitBranch className="size-5 text-primary" /><span className="min-w-0 flex-1"><span className="block font-semibold">leather147/banking</span><span className="block truncate font-mono text-[10px] text-muted-foreground">github.com/leather147/banking</span></span><ExternalLink className="size-4 text-muted-foreground" /></a></CardContent></Card>
+  </div>;
 }
 
 function OrderEditor({ icon: Icon, title, description, values, onChange }: { icon: typeof Grid2X2; title: string; description: string; values: string[]; onChange: (values: string[]) => void }) {
@@ -117,4 +150,8 @@ function Toggle({ title, description, checked, onChange }: { title: string; desc
 
 function SliderRow({ label, value, min, max, step, formatted, onChange, disabled }: { label: string; value: number; min: number; max: number; step: number; formatted: string; onChange: (value: number) => void; disabled?: boolean }) {
   return <div className={disabled ? "opacity-45" : undefined}><div className="mb-3 flex items-center justify-between gap-3"><span className="text-sm font-medium">{label}</span><span className="rounded-lg bg-secondary px-2 py-1 font-mono text-xs">{formatted}</span></div><Slider value={[value]} min={min} max={max} step={step} disabled={disabled} aria-label={label} onValueChange={([next]) => onChange(next)} /></div>;
+}
+
+function SelectRow({ label, value, options, onChange }: { label: string; value: string; options: { value: string; label: string }[]; onChange: (value: string) => void }) {
+  return <div className="min-w-0"><p className="mb-2 text-sm font-medium">{label}</p><Select value={value} onValueChange={onChange}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{options.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div>;
 }

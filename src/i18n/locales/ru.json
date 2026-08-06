@@ -6,7 +6,7 @@
   "nav.home": "Главная",
   "nav.payments": "Платежи",
   "nav.cards": "Карты",
-  "nav.history": "История",
+  "nav.history": "Операции",
   "nav.analytics": "Аналитика",
   "nav.services": "Все сервисы",
   "nav.profile": "Профиль",
@@ -34,17 +34,17 @@
   "dashboard.manage": "Управление",
   "settings.language.title": "Язык приложения",
   "settings.language.description": "Словари загружаются отдельными чанками и легко расширяются через pull request.",
-  "settings.language.stored": "язык сохранён"
-  ,"settings.title": "Настройки"
-  ,"settings.description": "Каждый раздел открывается на отдельном маршруте и сохраняет изменения в cookie."
-  ,"settings.section.appearance": "Персонализация"
-  ,"settings.section.accessibility": "Доступность"
-  ,"settings.section.language": "Язык и регион"
-  ,"settings.section.security": "Безопасность"
-  ,"settings.section.notifications": "Уведомления"
-  ,"settings.section.privacy": "Приватность"
-  ,"settings.section.devices": "Устройства"
-  ,"settings.section.developer": "Разработчик"
-  ,"settings.section.licenses": "Лицензии"
-  ,"settings.section.about": "О приложении"
+  "settings.language.stored": "язык сохранён",
+  "settings.title": "Настройки",
+  "settings.description": "Каждый раздел открывается на отдельном маршруте и сохраняет изменения в cookie.",
+  "settings.section.appearance": "Персонализация",
+  "settings.section.accessibility": "Доступность",
+  "settings.section.language": "Язык и регион",
+  "settings.section.security": "Безопасность",
+  "settings.section.notifications": "Уведомления",
+  "settings.section.privacy": "Приватность",
+  "settings.section.devices": "Устройства",
+  "settings.section.developer": "Разработчик",
+  "settings.section.licenses": "Лицензии",
+  "settings.section.about": "О приложении"
 }

@@ -11,6 +11,10 @@ export const topbarItemSchema = z.enum(["search", "shortcuts", "transfer", "noti
 export const toastPositionSchema = z.enum(["top-right", "top-center", "bottom-right", "bottom-center"]);
 export const measurementSystemSchema = z.enum(["metric", "imperial"]);
 export const cardDisplayStyleSchema = z.enum(["compact", "classic", "cinematic"]);
+export const currencyCodeSchema = z.enum(["RUB", "USD", "EUR", "CNY", "KZT"]);
+export const expenseSignStyleSchema = z.enum(["signed", "absolute"]);
+export const iconPackSchema = z.enum(["lucide", "phosphor"]);
+export const dynamicBackgroundSchema = z.enum(["off", "cursor", "navigation", "operation", "all"]);
 
 export type AccentColor = z.infer<typeof accentColorSchema>;
 export type EasingPreset = z.infer<typeof easingPresetSchema>;
@@ -98,6 +102,12 @@ export const personalizationSchema = z.object({
   brandName: z.string().trim().min(2).max(24).default("Lumen Bank"),
   measurementSystem: measurementSystemSchema.default("metric"),
   balanceHidden: z.boolean().default(false),
+  currencyCode: currencyCodeSchema.default("RUB"),
+  expenseSignStyle: expenseSignStyleSchema.default("signed"),
+  iconPack: iconPackSchema.default("lucide"),
+  dynamicBackground: dynamicBackgroundSchema.default("off"),
+  developerMode: z.boolean().default(false),
+  pinReauthMinutes: z.number().int().min(5).max(1440).default(60),
   cardDisplayStyle: cardDisplayStyleSchema.default("compact"),
   demoCardCount: z.number().int().min(1).max(3).default(2),
   sidebarCollapsed: z.boolean().default(false),

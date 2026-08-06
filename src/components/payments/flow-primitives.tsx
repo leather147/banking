@@ -111,7 +111,7 @@ export function ReviewDialog({ open, onOpenChange, title, description, rows, con
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="divide-y rounded-2xl border bg-background/55 px-4">
-          {rows.map((row) => <div key={row.label} className="flex items-start justify-between gap-5 py-3 text-sm"><span className="text-muted-foreground">{row.label}</span><span className="max-w-[65%] text-right font-medium">{row.value}</span></div>)}
+          {rows.map((row) => <div key={row.label} className="grid min-w-0 grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)] items-start gap-3 py-3 text-sm"><span className="min-w-0 text-muted-foreground">{row.label}</span><span className="min-w-0 break-words text-right font-medium">{row.value}</span></div>)}
         </div>
         <div className="flex items-center gap-2 rounded-xl bg-primary/10 p-3 text-xs text-muted-foreground"><Check className="size-4 shrink-0 text-primary" />{t("review.demoNotice", "Это демонстрация интерфейса: деньги не списываются.")}</div>
         <DialogFooter>

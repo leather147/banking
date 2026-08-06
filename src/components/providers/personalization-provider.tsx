@@ -41,6 +41,8 @@ export function PersonalizationProvider({ initialSettings = DEFAULT_PERSONALIZAT
     root.dataset.toastPosition = settings.toastPosition;
     root.dataset.sidebar = settings.sidebarCollapsed ? "collapsed" : "expanded";
     root.dataset.measurementSystem = settings.measurementSystem;
+    root.dataset.iconPack = settings.iconPack;
+    root.dataset.dynamicBackground = settings.dynamicBackground;
     root.dataset.tabNavigation = settings.tabNavigation ? "on" : "off";
     root.dataset.focusWrap = settings.focusWrap ? "on" : "off";
     root.style.setProperty("--interface-scale", String(settings.interfaceScale));

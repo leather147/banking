@@ -24,7 +24,7 @@ export function InitialLoader() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, filter: "blur(14px)" }}
           transition={{ duration: settings.animations ? 0.5 / settings.motionSpeed : 0.08, ease: MOTION_EASINGS[settings.easingPanel].value }}
-          className="glass-panel fixed inset-0 z-[100] grid place-items-center bg-background/88"
+          className="initial-loader-shell glass-panel fixed inset-0 z-[100] grid place-items-center bg-background/88"
         >
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.58 / settings.motionSpeed, ease: MOTION_EASINGS[settings.easingPanel].value }} className="flex flex-col items-center gap-6">
             <Brand />

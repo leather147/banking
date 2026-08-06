@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...props }: React.ComponentProps<"section">) {
-  return <section className={cn("glass-panel surface-glow rounded-2xl border text-card-foreground transition-[border-color,box-shadow,background-color,backdrop-filter]", className)} {...props} />;
+  return <section className={cn("glass-panel surface-glow min-w-0 rounded-2xl border text-card-foreground transition-[border-color,box-shadow,background-color,backdrop-filter]", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.ComponentProps<"div">) {

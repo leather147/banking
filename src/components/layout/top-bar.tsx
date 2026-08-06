@@ -13,6 +13,7 @@ import {
   Landmark,
   MapPin,
   PiggyBank,
+  QrCode,
   Send,
   Settings,
   ShieldCheck,
@@ -53,7 +54,7 @@ export function TopBar() {
   const temperature = settings.measurementSystem === "metric" ? "18°C" : "64°F";
   return (
     <header className="glass-panel shell-glow relative z-30 flex h-[68px] min-w-0 shrink-0 items-center gap-2 overflow-hidden border-b bg-background/68 px-3 sm:gap-3 sm:px-5 lg:px-6 2xl:px-8">
-      <Brand compact className="shrink-0 lg:hidden" />
+      <Brand compact className="hidden shrink-0 md:flex lg:hidden" />
       <div className="min-w-[7rem] flex-1 sm:max-w-md xl:max-w-lg 2xl:max-w-xl" style={itemOrder("search")}><SearchCommand /></div>
 
       <div className="hidden min-w-0 flex-1 items-center justify-end gap-1.5 overflow-hidden min-[1450px]:flex" style={itemOrder("shortcuts")}>
@@ -66,8 +67,9 @@ export function TopBar() {
       </div>
 
       <div className="hidden shrink-0 min-[1200px]:block" style={itemOrder("transfer")}><OperationStartButton kind="transfer" title={t("top.newTransfer", "Начать новый перевод")} className={buttonVariants()}><Send />{t("top.transfer")}</OperationStartButton></div>
+      <Button asChild variant="ghost" size="icon" className="shrink-0 sm:hidden" aria-label="Оплатить по QR-коду"><Link href="/payments"><QrCode /></Link></Button>
       <div className="shrink-0" style={itemOrder("notifications")}><MobileNotificationButton /><NotificationMenu /></div>
-      <div className="shrink-0" style={itemOrder("profile")}>
+      <div className="topbar-profile shrink-0" style={{ "--topbar-order": itemOrder("profile").order } as React.CSSProperties}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button variant="ghost" className="relative h-11 shrink-0 gap-2 px-0.5 sm:px-1.5 md:px-2" aria-label={t("profile.menu.open", "Открыть меню учётной записи")}>

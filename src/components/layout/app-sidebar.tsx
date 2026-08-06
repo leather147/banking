@@ -43,7 +43,7 @@ const navigation = {
   home: { label: "Главная", href: "/", icon: Home },
   payments: { label: "Платежи", href: "/payments", icon: Send },
   cards: { label: "Карты", href: "/cards", icon: CreditCard },
-  history: { label: "История", href: "/history", icon: Clock3 },
+  history: { label: "Операции", href: "/history", icon: Clock3 },
   analytics: { label: "Аналитика", href: "/analytics", icon: BarChart3 },
   services: { label: "Все сервисы", href: "/services", icon: Grid2X2 },
 } satisfies Record<NavigationItemId, NavItem>;

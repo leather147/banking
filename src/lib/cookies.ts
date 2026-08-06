@@ -23,6 +23,20 @@ export function setCookie(name: string, value: unknown) {
   window.dispatchEvent(new CustomEvent(COOKIE_EVENT, { detail: name }));
 }
 
+export function removeCookie(name: string) {
+  document.cookie = `${encodeURIComponent(name)}=; Path=/; Max-Age=0; SameSite=Lax`;
+  window.dispatchEvent(new CustomEvent(COOKIE_EVENT, { detail: name }));
+}
+
+export function clearLumenCookies(prefixes: string[] = ["lumen-"]) {
+  const names = document.cookie
+    .split("; ")
+    .map((item) => decodeURIComponent(item.split("=")[0] ?? ""))
+    .filter((name) => prefixes.some((prefix) => name.startsWith(prefix)));
+  names.forEach(removeCookie);
+  return names.length;
+}
+
 export function useCookieState<T>(name: string, schema: ZodType<T>, fallback: T) {
   const subscribe = useCallback((onStoreChange: () => void) => {
     const listener = (event: Event) => {

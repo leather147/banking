@@ -2,6 +2,7 @@ import { Boxes, Cpu, Landmark, ShieldCheck } from "lucide-react";
 import { PageHeading } from "@/components/shared/page-heading";
 import { PersonalizedBankText } from "@/components/shared/personalized-bank-text";
 import { SettingsShell } from "@/components/settings/settings-shell";
+import { AboutBuildCard } from "@/components/settings/about-build-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const facts = [
@@ -12,5 +13,5 @@ const facts = [
 ];
 
 export default function AboutPage() {
-  return <><PageHeading title="О приложении" description="Техническая информация о демонстрационной банковской оболочке." /><SettingsShell><Card><CardHeader><CardTitle>Сведения о сборке</CardTitle><p className="text-sm text-muted-foreground">Интерфейс реализован как App Router web app с навигацией без полной перезагрузки.</p></CardHeader><CardContent className="divide-y pt-1">{facts.map(({ icon: Icon, label, value }) => <div key={label} className="flex items-center gap-3 py-4"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary"><Icon className="size-4 text-primary" /></span><span className="min-w-0"><span className="block text-xs text-muted-foreground">{label}</span><span className="block text-sm font-medium">{value}</span></span></div>)}</CardContent></Card></SettingsShell></>;
+  return <><PageHeading title="О приложении" description="Техническая информация о демонстрационной банковской оболочке." /><SettingsShell><div className="space-y-4"><Card><CardHeader><CardTitle>Сведения о сборке</CardTitle><p className="text-sm text-muted-foreground">Интерфейс реализован как App Router web app с навигацией без полной перезагрузки.</p></CardHeader><CardContent className="divide-y pt-1">{facts.map(({ icon: Icon, label, value }) => <div key={label} className="flex items-center gap-3 py-4"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary"><Icon className="size-4 text-primary" /></span><span className="min-w-0"><span className="block text-xs text-muted-foreground">{label}</span><span className="block text-sm font-medium">{value}</span></span></div>)}</CardContent></Card><AboutBuildCard /></div></SettingsShell></>;
 }
